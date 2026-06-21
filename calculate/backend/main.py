@@ -1,23 +1,22 @@
-# backend/main.py
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-# Импортируем функцию расчета из нашего соседнего модуля engine
 from engine import calculate_cantilever_beam
 
 app = FastAPI()
 
-# Разрешаем фронтенду (даже если он запущен локально) делать запросы к бэкенду
+# Разрешаем CORS (пусть будет, не помешает)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/api/calculate")
 def get_calculation(L: float, F: float, EI: float):
-    # Вызываем наш изолированный движок
-    results = calculate_cantilever_beam(L, F, EI)
-    return results
+    return calculate_cantilever_beam(L, F, EI)
 
-# Запуск сервера в терминале командой: uvicorn main:app --reload
+# А ЭТО САМОЕ ВАЖНОЕ ДЛЯ ХОСТИНГА:
+# Теперь сервер будет искать файлы в папке 'frontend'
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
